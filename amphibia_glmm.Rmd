@@ -1,0 +1,364 @@
+# Binomial GLMMs
+
+# Goals
+
+- Gain familiarity with building, checking, and plotting a binomial GLMM
+- Learn about binned residual plots for checking binomial models
+
+# Loading the data
+
+We are going to work with a data set from:
+O’Regan, S. M., W. J. Palen, and S. C. Anderson. 2013. Climate warming mediates negative impacts of rapid pond drying for three amphibian species. Ecology 95:845–855.
+
+These data represent time to metamorphosis for 3 amphibian species in a mesocosm experiment. The experiment had 2 levels of warming (normal and warmed) and 2 levels of pond drying (normal/permanent and accelerated/temporary). There were multiple tanks per treatment condition.
+
+Let's read in and wrangle the data for our purposes.
+
+```{r, message=FALSE}
+library(tidyverse)
+dt <- read_csv("amphibia.csv")
+dt$date <- lubridate::mdy(dt$date)
+dt <- filter(dt, !tank %in% c(23, 30, 35)) # simplify
+
+max_time <- max(dt$time)
+dat <- list()
+for (i in seq_len(nrow(dt))) {
+  ti <- dt[i,]$time
+  dat[[i]] <- data.frame(day = seq(1, max_time), 
+    meta = c(rep(0, ti-1), rep(1, max_time - ti + 1)),
+    frog = i, tank = dt[i,"tank"], warming = dt[i,"climate"], 
+    drying = dt[i,"drying"], species = dt[i,"species"])
+}
+dat <- bind_rows(dat)
+d <- filter(dat, day %in% unique(dt$time)) # downsample to the observed days 
+species_letters <- tibble(species = c("spadefoot", "treefrog", "redlegged"),
+  sp = c("b", "c", "a"))
+d <- inner_join(d, species_letters, by = "species") %>%
+  rename(species_true = species, species = sp) %>%
+  mutate(treatment = paste(climate, drying, sep = "+")) %>% 
+  mutate(warming = ifelse(climate == "warming", 1, 0),
+    drying = ifelse(drying == "temp", 1, 0))  %>% 
+    select(-climate)  %>% 
+  mutate(species = as.factor(species))
+day_reference <- 60 # set day sixty as our reference date (intercept)
+d <- mutate(d, day_centered = day - day_reference, week_centered = day_centered/7)
+```
+
+# Plot the data 
+
+We are going to model the expected probability of a randomly chosen amphibian having reached metamorphosis at any given point in time and for each of the treatments.
+
+In other words, `meta` (1 = metamorphosis) will be our response, and the predictors will be `week_centered`, `warming`, `drying`, and `species`. I've also included columns for `treatment` (warming and drying combination) and `species_true` to make plotting easier. 
+
+Why might I have chosen to work with `week_centered` instead of `day`?
+
+What are some useful ways we could look at the data before fitting a model? 
+
+Here is one way I thought of:
+
+```{r}
+ggplot(d, aes(week_centered, meta, color = treatment)) +
+  facet_grid(treatment~species_true) +
+  geom_point(alpha = 0.05, position = position_jitter(height = 0.15)) +
+  ylab("Probability of metamorphosis")
+```
+
+Take a few minutes to explore the data set yourself with ggplot:
+
+```{r}
+
+```
+
+# Fitting a global model and separate models 
+
+A good first step is to fit a global model with no random effects and separate models for each potential random effect level.
+
+We will use the function `lme4::lmList` to fit the separate GLMs. We could also do this with dplyr or with a for loop or with the purrr package.
+
+```{r}
+library(lme4)
+
+m_global <- glm(meta ~ week_centered + species + warming * drying, 
+  family = binomial(link = "logit"), data = d)
+arm::display(m_global)
+
+m_list <- lme4::lmList(meta ~ week_centered | tank, data = d, 
+  family = binomial(link = "logit"))
+```
+
+We now have a list and each element of the list contains a GLM model.
+
+```{r}
+coef(m_list[[1]])
+```
+
+There are lots of different ways we could extract the coefficients from each element of the list. Here we will use one of the `map` functions from Hadley Wickham's purrr package. If you are familiar with the `apply` functions in R, the `map` functions are a consistent and easy-to-work-with version of the `apply` family of functions.
+
+```{r}
+intercepts <- map_dbl(m_list, function(x) coef(x)[[1]])
+slopes <- map_dbl(m_list, function(x) coef(x)[[2]])
+```
+
+We can check that the tank-level estimates are approximately normally distributed:
+
+```{r}
+hist(intercepts)
+hist(slopes)
+```
+
+Although we won't here, it would be a good idea to plot the model fits on
+top of the data for each tank. 
+
+We can do something similar with ggplot:
+
+```{r}
+ggplot(d, aes(day, meta, color = treatment)) +
+  facet_grid(treatment~species_true) +
+  geom_point(alpha = 0.05, position = position_jitter(height = 0.15)) +
+  ylab("Probability of metamorphosis") +
+  geom_smooth(method = "glm", 
+    method.args = list(family = binomial(link = "logit")), 
+      se = FALSE, alpha = 0.7, colour = "black")
+
+ggplot(d, aes(day, meta, group = tank, color = treatment)) +
+  facet_grid(treatment~species_true) +
+  geom_point(alpha = 0.05, position = position_jitter(height = 0.15)) +
+  ylab("Probability of metamorphosis") +
+  geom_smooth(method = "glm", 
+    method.args = list(family = binomial(link = "logit")), 
+      se = FALSE, colour = "black")
+```
+
+How do these plots help build our intuition about what we expect to find when we fit more complicated GLMMs?
+
+# Fitting an initial GLMM
+
+Let's try fitting a binomial GLMM with a random intercept for each tank:
+
+```{r}
+m <- glmer(meta ~ week_centered + species + warming * drying + (1 | tank), 
+  family = binomial(link = "logit"), data = d)
+```
+
+Let's look at the model:
+
+```{r}
+summary(m)
+VarCorr(m)
+```
+
+Default residual plots are not particularly useful for a binomial response, although adding a smooth function helps a little bit. 
+
+```{r}
+plot(m, type = c("p", "smooth"), ylim = c(-3, 3))
+```
+
+Looking at the residuals by group can also be useful. What are we looking for here? 
+
+```{r}
+plot(m, species~resid(.,type = "pearson"), xlim = c(-5, 5))
+plot(m, treatment~resid(.,type = "pearson"), xlim = c(-5, 5))
+```
+
+# Binned residuals
+
+One useful way of checking residuals for a binomial response is by using a binned residual plot. Gelman and Hill (2007) cover this type of plot in their textbook on multilevel modeling. 
+
+The idea is to group the residuals into bins based on the predictor values. The trick is picking an appropriate number of bins for this to be useful. We can make all the same types of plots with these binned residuals. 
+
+```{r}
+aug <- broom.mixed::augment(m)
+aug <- aug %>% mutate(week_binned = findInterval(week_centered, 
+      seq(min(week_centered), max(week_centered), length.out = 25)))
+binned <- group_by(aug, species, week_binned, tank) %>%
+  summarise(mean_week_centered = mean(week_centered), mean_residual = mean(.resid),
+    mean_fitted = mean(.fitted))
+
+ggplot(binned, aes(mean_fitted, mean_residual, color = species)) +
+  geom_point(alpha = 0.8) +
+  geom_smooth(se = FALSE, method = "loess") +
+  geom_smooth(se = FALSE, method = "loess", colour = "black")
+```
+
+This does not look great, but this is just a starting point. We will be improving this model below. 
+
+# Plotting the random and fixed estimates
+
+We can use built-in functions to plot the random intercept estimates:
+
+```{r}
+lattice::dotplot(ranef(m, condVar = TRUE))
+```
+
+We can access Wald confidence intervals with:
+
+```{r}
+confint(m, method = "Wald")
+```
+
+These assume that the log-likelihood surface follows a quadratic shape.
+
+We won't calculate profile or bootstrap confidence intervals here because they would take a long time to run. But we could calculate those with:
+
+```{r}
+# confint(m, method = "profile")
+# confint(m, method = "boot")
+```
+
+The profile confidence intervals do not assume a quadratic log-likelihood surface but ignore "finite-size" issues. (They assume a "very large" number of groups.)
+
+The bootstrap confidence intervals are the most trustworthy but may take a very long time to generate.
+
+# Model comparison 
+
+We can compare our model without a predictor, say species, via AIC or likelihood ratio test (`anova()`). Try that yourself:
+
+```{r}
+m1 <- update(m,.~.-species) # use the same model but subtract off the species predictor
+bbmle::AICtab(m, m1) # exercise
+anova(m, m1) # exercise
+```
+
+Perhaps we want to let the effect of time vary by species. Try using the `update()` function to add the interaction `week_centered:species` to our original model (`m`). 
+
+```{r}
+m2 <- update(
+  m,.~. + week_centered:species) # exercise
+summary(m2, correlation = FALSE)
+```
+
+Compare the AIC:
+
+```{r}
+bbmle::AICtab(m, m2) # exercise
+```
+
+So the AIC is substantially lower letting the slope vary by species. 
+
+# Plotting the predictions 
+
+Let's try plotting the predictions for each tank:
+
+```{r}
+new_data <- unique(select(d, day:week_centered, -frog))
+new_data$prediction <- predict(m2, type = "response", newdata = new_data)
+ggplot(new_data, aes(day, prediction, group = tank, color = treatment)) +
+  geom_line(alpha = 0.8) +
+  facet_wrap(~species_true) +
+  geom_point(aes(y = meta), alpha = 0.3, 
+    position = position_jitter(height = 0.05)) +
+  ylab("Probability of metamorphosis")
+```
+
+# Expanding the model with glmmTMB
+
+We might want to consider letting some of these effects vary by tank. This model will not fit with lme4. Instead we will rely on TMB.
+
+If I was publishing this analysis I would want to be extra careful that the model had converged given that it failed with default settings in lme4. I might play with the control settings for lme4 or try fitting the model with glmmADMB or `MASS::glmmPQL`. 
+
+```{r}
+library(glmmTMB)
+m3 <- glmmTMB(meta ~ week_centered * species + warming * drying + 
+  (1 + week_centered | tank), 
+  family = binomial(link = "logit"), data = d)
+summary(m3)
+new_data$prediction3 <- predict(m3, type = "response", newdata = new_data)
+```
+
+In fact, `MASS::glmmPQL` does give us similar inference:
+
+```{r, eval=FALSE}
+m_pql <- MASS::glmmPQL(meta ~ week_centered * species + warming * drying,
+  random = ~ 1 + week_centered | tank, 
+  family = binomial(link = "logit"), data = d)
+summary(m_pql)
+```
+
+We would probably also want to consider if the effect of time (`week_centered`) 
+varies by treatment. To do that, let's change the model formula to include all 
+two-way interactions. Remember that there is a shortcut for this:
+
+```{r}
+m4 <- glmmTMB(meta ~ 
+    (week_centered + species + warming + drying)^2 + # exercise
+  (1 + week_centered | tank), 
+  family = binomial(link = "logit"), data = d)
+summary(m4)
+bbmle::AICtab(m3, m4)
+```
+
+Indeed the data support including both of these interactions with time and
+given this was part of the experiment it is likely a scientific question we
+would want to explore.
+
+Let's plot these final probability of metamorphosis curves:
+
+```{r}
+new_data$prediction4 <- predict(m4, type = "response", newdata = new_data)
+ggplot(new_data, aes(day, prediction4, group = tank, color = treatment)) +
+  geom_line(alpha = 0.8) +
+  facet_wrap(~species_true) +
+  geom_point(aes(y = meta), alpha = 0.3, 
+    position = position_jitter(height = 0.05)) +
+  ylab("Probability of metamorphosis")
+```
+
+How can we derive estimates at any given factor levels? What does the slope
+estimate for `week_centered` represent? What is the slope estimate for
+`week_centered` for species `b`? How can we get a quick estimate of the rate of
+change of proportion metamorphosed per week at the steepest point on the curve?
+(Remember the divide by 4 rule.)
+
+```{r}
+comparison_effect <- function(model, base_par, comparison_par) {
+  if (class(model) == "glmmTMB") {
+    fe <- fixef(model)$cond
+  } else {
+    fe <- fixef(model)
+  }
+  if (base_par != comparison_par) {
+    fe_comp <- fe[[comparison_par]] + fe[[base_par]]
+  } else {
+    fe_comp <- fe[[base_par]]
+  }
+  fe_comp
+}
+
+coef(summary(m4))
+comparison_effect(m4, "week_centered", "week_centered")/4
+comparison_effect(m4, "week_centered", "week_centered:speciesb")/4
+comparison_effect(m4, "week_centered", "week_centered:speciesc")/4
+```
+
+Let's look at the binned residuals from this more complicated model:
+
+```{r}
+aug <- d
+aug$.resid <- residuals(m4)
+aug$.fitted <- fitted(m4)
+aug <- aug %>% mutate(week_binned = findInterval(week_centered, 
+      seq(min(week_centered), max(week_centered), length.out = 25)))
+binned4 <- group_by(aug, species, week_centered, tank) %>%
+  summarise(mean_week_centered = mean(week_centered), mean_residual = mean(.resid),
+    mean_fitted = mean(.fitted))
+
+ggplot(binned4, aes(mean_fitted, mean_residual, colour = species)) +
+  geom_point(alpha = 0.8) +
+  geom_smooth(se = FALSE, method = "loess") +
+  geom_smooth(se = FALSE, method = "loess", colour = "black")
+```
+
+This looks better, although not perfect. It's possible that a different link function would fit the data better although none of the obvious alternatives looked much better to me. For example:
+
+```{r, eval=FALSE}
+# m5 <- glmmTMB(meta ~ (week_centered + species + warming + drying)^2 + 
+#   (1 + week_centered | tank), 
+#   family = binomial(link = "probit"), data = d)
+```
+
+# Addendum
+
+What assumptions does our model make? 
+
+If we are primarily interested in the effect of these treatments on time to
+metamorphosis what is another simpler way we could have modeled these data?
