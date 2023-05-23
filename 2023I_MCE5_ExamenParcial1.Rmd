@@ -1,7 +1,7 @@
 ---
 title: "Examen parcial 1 - Métodos Cuantitativos en Ecología"
-author: 'Apellido Nombre'
-date: "22 de mayo de 2023"
+author: 'Hello Hello'
+date: "23 de mayo de 2023"
 output: 
   html_document:
     toc: true
@@ -44,9 +44,9 @@ Bienvenidos al examen parcial de Métodos Cuantitativos en Ecología [MCE5 - 202
 
 * Cada vez que responda una pregunta, envíe los cambios con un ```commit``` similar a `Apellido Nombre ha realizado el ejercicio ##`. 
 
-# **[1 PUNTOS] Diseño, microbioma de anfibios.**
+# **[2 PUNTOS] Diseño, especies raras.**
 
-En el estudio realizado por <a href="https://doi.org/10.1371/journal.pone.0256328">Alexiev A., Chena M.Y., McKienze V.J. (2021)</a> evaluan como el microbiome de la piel de anfibios en la dinámica fisiológica del anfibio. Suponga que quiere replicar este estudio en alguna zona del Ecuador. Para ello inicie respondiendo las siguientes preguntas:  
+En el estudio realizado por <a href="https://doi.org/10.1111/jvs.13185">Sanches -Martin R., Verdú M. y Montensinos-Navarro A. (2023)</a> evaluan cómo la facilitación interespecífica puede mantener la diversidad a lo largo de la vida de la especie al evitar la extinción de especies localmente raras en etapas juveniles y reducir las disparidades de rendimiento entre vecinos de diferentes especies en etapas maduras.. Suponga que quiere replicar este estudio en alguna zona del Ecuador. Para ello inicie respondiendo las siguientes preguntas:  
 
 ## Para su potencial investigación ¿Cuál sería su hipótesis ? (Explique)
 
@@ -55,30 +55,17 @@ En el estudio realizado por <a href="https://doi.org/10.1371/journal.pone.025632
 
 ## Muestra
 
-Usted va realizar una asignación al azar las siguientes características: 
-
-- sitios de colecta (cinco sitios de Napo).
-
-- personas que van a realizar la colecta (suponga que tiene 2 personas). 
-
-- parte del anfibio de donde se va muestrear el microbioma (suponga 3 partes anatómicas).
-
-Luego defina la cantidad de individuos (muestra) que va a requerir, incluya los campos vacíos para las mediciones de las variables dependientes e independientes y genere un archivo **anfibios.csv** con su tabla de asignación al azar. 
+Replique el diseño realizado en el artículo en localidades del Ecuador y genere el archivo **rarespecies.csv**. 
 
 ```{r crd_anfibios}
-sitios = c("Sitio1", "La gallera", "Chompi")
+sitios = c("Sitio1", "Chuquitos", "Chompi")
 
 ```
-Explique sus razones en la definición de la muestra: 
+Explique el resultado muestra: 
 
 **Respuesta:**
 
 
-
-## Pseudoréplica
-¿Cómo evitará la pseurorepetición espacial en su estudio? Explique en tres oraciones. 
-
-**Respuesta:**
 
 ## Variables
 ¿Cuáles son sus variables (dependiente(s) e independiente(s))? Explique cada una de las variables
@@ -87,263 +74,28 @@ Explique sus razones en la definición de la muestra:
 
 
 ## Gráfica e hipótesis
-En una hoja de papel dibuje un gráfico hipotetico. 
-
-- Realice uno para cada sitio de colecta del item 1.2. basado en la figura 1 del artículo mostrando [Coloque adecuadamente las leyendas]. 
-
-- Describa lo que se muestra en su gráfico hipotético justificando las razones de su resultado.
+En una hoja de papel dibuje un gráfico hipotetico basado en la figura 4 del artículo mostrando [Coloque adecuadamente las leyendas]. Describa su figura justifique su razonamiento.
 
 **Respuesta (adjunte una foto de la imagen o genere una gráfica con código)**
 <center>![](hola.png)</center>
 
 
-# **[1 PUNTOS] Comparación de medias, nutrientes.**
 
-Usted ha sido contratado para establecer un protocolo de cría de plantas para un programa de restauración ecológica. Para ello realiza un experimento en bloques y aplica N (nitrógeno), P (fósforo) y K (potasio). [1 significa que SI aplica y 0 que NO aplica]. Supomga que luego del experimento, obtiene las medidas de productividad en libras de biomasa generada. Sus datos están precargados en R como **npk**. 
 
-El resultado final es recomendar el mejor tratamiento para obtener la mayor cantidad de biomasa. Para ello realice los siguientes análisis. **(Muestre los gráficos, etiquetando adecuadamente los ejes, las leyendas y títulos)**
+# **[6 PUNTOS] Regresiones
 
-## Describa la data **npk**. 
+En esta parte debe aplicar las regresiones lineal, linearizada y generalizada sobre la presencia de ácaros en musgos. Una de las especies analizadas es *Galumma sp.* cuya abundancia presencia y proporción es posiblemente afectada por las siguiente cinco variables ambientales como densidad de sustrato, el tipo de sustrato, el contenido de agua, si se tiene o no arbustos en la cercanía y la topografía del suelo. Utilice la data ```mites.csv``` y responda los siguientes items. 
 
-**Respuesta:**
+- ¿Cuál es el efecto de las variables ambientales en la i) abundancia de ii) abundancia y iii) proporción de la especie *Galumma sp.*?
 
-## Análisis exploratorio (tipos de variables, histogramas):
-```{r explorar1}
+Para responder esta pregunta debe generar las hipótesis y probar las hipótesis (código y explicación), asimismo visualizar con etiquetas adecuadas. Considere realizar lo siguiente:
 
+- Realizar un análisis exploratorio.
 
+- Realizar regresiones lineales de cada variable de respuesta y variables efectoras, univariable o multivariable. Verifique los supuestos de la regresión. 
 
-```
-Explique el resultado del código. 
+- Realizar regresiones linearizadas de cada variable de respuesta y variables efectoras, univariable o multivariable. 
 
-**Respuesta:**
+- Realizar regresiones lineales generalizadas de cada variable de respuesta y variables efectoras, univariable o multivariable. 
 
-
-## Plantee la hipótesis nula y alternativa. 
-
-**Respuesta:**
-
-
-## Análisis de varianzas (ANOVA, Tukey o Fisher, gráficos).
-```{r analisis1}
-
-```
-Explique el resultado del código. 
-
-
-## Análisis de supuestos (Normalidad, Homogeneidad de varianzas, Linealidad).
-```{r supuestos1}
-
-```
-Explique el resultado del código. 
-
-
-
-
-
-# **[2 PUNTOS] Regresión lineal, pingüinos.**
-
-**Usar la base de datos "exam1_antarticbird.txt"**
-
-El clima de la Tierra está cambiando rápidamente y se espera que estos cambios afecten la estructura y el funcionamiento de los ecosistemas. Quizás una de las respuestas mejor documentadas y más espectaculares al cambio climático son los cambios en la <a href="http://www.creaf.cat/es/biodiversidad/fenologia-y-distribucion-de-especies">fenología</a>. La gran mayoría de los estudios del hemisferio norte que han analizado las relaciones entre datos fenológicos y climáticos a largo plazo han reportado un avance en las actividades de las especies de primavera. Por ejemplo, la llegada y reproducción más temprana de aves migratorias.
-
-Aqui, utilizamos las fechas de llegada y puesta de tres pinguinos: 
-
-* El **pinguino emperador** *Aptenodytes forsteri* (EP) es el más grande de los pinguinos existentes (los machos pesan hasta 45 kg) y se reproducen en invierno sobre hielo marino sólido. Los machos y hembras llegan al área de reproducción a finales de marzo. Durante los próximos dos meses, se forman parejas y la hembra deposita el único huevo para que su pareja masculina la incube durante los siguientes dos meses en el corazón del invierno. 
-
-* El **Adelie Penguin** *Pygoscelis adeliae* (AP) es un pinguino de tamaño mediano (aproximadamente 4.5 kg), que se reproduce durante el verano austral con islas rocosas o en nunataks costeros (areas libres de hielo del continente antártico). 
-
-* La *Daption capense* (CP) es una especie pequeña (aproximadamente 400 g) y se reproduce durante el verano austral en islas rocosas. El periodo de reproducción es relativamente corto porque las aves llegan a mediados de octubre, ponen sus huevos a fines de noviembre. 
-
-Durante el periodo de reproducción, las tres especies se alimentan directamente de krill o de peces. En este periodo de reproduccion, el seguimiento satelital y los estudios de dieta han demostrado que las tres especies estan más o menos asociadas con el hielo marino. Ambas especies de pinguinos usan el hielo marino como plataformas de descanso y forraje. 
-
-En este estudio vamos a usar como variable independiente: el indicador de variaciones climaticas (variable "SOI" en la base de datos). 
-
-El objetivo de este estudio es:
-
-## Análisis exploratorio (tipos de variables, ggpairs):
-```{r explorar2}
-pinguinos = read.table("exam1_antarcticbird.txt",header = T)
-head(pinguinos, 2)
-
-```
-
-Explique el resultado del código. 
-
-
-## Evaluar si hay efectos de la variable independiente ( SOI) 
-en la nidificacion (variable "laying")  de cada una de las especies, son tres análisis por separado.
-
-- Plantee una hipótesis de prueba y las estadísticas que prueban su hipótesis.
-
-```{r Pinguino1}
-
-```
-Explique el resultado del código. 
-
-
-## Evaluar los supuestos del modelo para el ejercicio 3.2.  
-
-```{r supuestos2}
-
-```
-Explique los resultados del código. 
-
-
-
-## Evaluar si hay relación entre la variable "Year" y la variable (SOI), 
-
-- Plantee una hipótesis de prueba y las estadísticas que prueban su hipótesis.
-
-```{r Pinguino2}
-
-```
-Explique el resultado del código. 
-
-
-## Evaluar los supuestos del modelo para el ejercicio 3.2.  
-
-```{r supuestos3}
-
-```
-Explique los resultados del código. 
-
-
-
-# **[2 PUNTOS] Regresión linearizada, sueño de mamíferos.**
-El sueño es un fenómeno usual en los animales y está asociado a algunos parámetros de los organismos. El sueño en los mamíferos ha sido estudiado por <a href="https://www.pnas.org/content/104/3/1051">Savage V.M. & West G.B</a> donde han encontrado esas relaciones del tiempo de sueño con algunas variables corporales y fisiologicas. 
-Utilice la data precargada en R **msleep** analice las relaciones que existen entre: 
-
-## Explique la data. 
-Explique el datos y las variables
-
-
-## Realice la regresión lineal.
-Utilice como variable dependiente *sleep_total* y como variable independiente *bodywt*. Analice la significancia del modelo y de los coeficientes. Realice una gráfica de la regresión.
-
-```{r sueno1}
-library(ggplot2)
-sueno <- msleep
-
-```
-Interprete sus resultados basándose en la figura 1 del artículo. 
-
-
-## Realice la regresión lineal.
-Utilice como variable dependiente *sleep_total* y como variable independiente *brainwt*. Analice la significancia del modelo y de los coeficientes. Realice una gráfica de la regresión.
-
-```{r sueno2}
-
-
-```
-Interprete sus resultados basándose en la figura 2 del artículo. 
-
-
-## Realice la regresión lineal.
-Utilice como variable dependiente *sleep_total* y como variables independientes *bodywt* y *brainwt*. Analice la significancia del modelo y de los coeficientes. Analice si existe colinealidad. Realice una gráfica de la regresión.
-```{r sueno3}
-
-
-```
-Interprete sus resultados basándose en las figuras 1 y 2 del artículo. 
-
-
-## Realice la regresión linearizada. 
-Utilice los logaritmos de *sleep_total* y *bodywt*. Analice la significancia del modelo y de los coeficientes. Realice una gráfica de la regresión.
-
-```{r sueno4}
-
-
-```
-Interprete sus resultados basándose en la figura 1 del artículo. 
-
-
-## Realice la regresión linearizada.
-Utilice los logaritmos de *sleep_total* y *brainwt*. Analice la significancia del modelo y de los coeficientes. Realice una gráfica de la regresión.
-
-```{r sueno5}
-
-
-```
-Interprete sus resultados basándose en la figura 2 del artículo. 
-
-
-## Realice la regresión linearizada.
-Utilice los logaritmos de *sleep_total* versus *bodywt* y *brainwt*. Analice la significancia del modelo y de los coeficientes. Analice si existe colinealidad. Realice una gráfica de la regresión.
-```{r sueno6}
-
-
-```
-Interprete sus resultados basándose en las figuras 1 y 2 del artículo. 
-
-
-
-## Fórmula linearizada y la fórmula exponencial.  
-
-Escriba las fórmulas linearizadas y las fórmulas exponenciales de las regresiones de los items **4.5** y **4.6**.
-
-**Respuesta:** 
-
-* Fórmula linearizada **Sueño - Masa Corporal** (cambiar los valores según lo que salga de los análisis).
-
-$$
-ln(S_{t}) = 12 + ln(M_{c})
-$$
-Donde $S_{t}$ es ..., $M_{c}$ es ... . 
-
-
-* Fórmula exponencial (real) **Sueño - Masa Corporal**  (cambiar los valores según lo que salga de los análisis).
-
-
-$$S_{t}) = 12 + 4*e^{M_{c}+3}$$
-Donde $S_{t}$ es ... , $M_{c}$ es ... . 
-
-
-# **[2 PUNTOS] Regresión Lineal Generalizada (GLM), ovoposición de anfibios**
-
-El cambio climático podría estar asociado a la disponibilidad de hábitats para que ovopositen y se desarrollen algunas especies de anfibios. Un estudio realizado por <a href="https://doi.org/10.1890/13-0916.1">O'Regan S, Palen W. y Anderson D. (2013)</a> se estudió el efecto de los cambios ambientales en la desecación de charcos de las cuales dependen algunas especies de anfibios. Utilizando la data ```amphibia.csv``` y el cuaderno  ```amphibia_glm.Rmd``` resuelva lo siguiente. 
-
-## Regresión lineal. 
-Encuentre la relación entre si las especies de anfibios pueden o no hacer metamorfosis dependiendo del clima. 
-```{r  amphibia1}
-
-```
-Explique los resultados del código. 
-
-
-## Regresión linearizada. 
-Encuentre la relación entre si las especies de anfibios pueden o no hacer metamorfosis dependiendo del clima.
-
-```{r  amphibia2}
-
-```
-Explique los resultados del código. 
-
-
-## Regresión lineal generalizada. 
-Encuentre la relación entre si las especies de anfibios pueden o no hacer metamorfosis dependiendo del clima utilizando el cuaderno ```amphibia_glm.Rmd```. 
-
-```{r  amphibia3}
-
-```
-Explique los resultados del código. 
-
-
-## Evalue cuál de los modelos explica mejor la relación utilizando el valor AIC. 
-
-```{r  amphibia4}
-
-```
-Explique los resultados del código. 
-
-
-## Realice las gráficas de los items 5.1, 5.2 y 5.3. 
-
-- Coloque adecuadamente las leyendas: t+itulo, horizontal y vertical. 
-
-```{r  amphibia5}
-
-```
-Explique los resultados del código. 
-
-
-
+- Comparar de la bondad de las regresiones. 
