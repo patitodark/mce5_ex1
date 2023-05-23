@@ -61,17 +61,175 @@ Gráfica:
 
 Con esta imagen se pretende que en el eje de la X, se encuentre el tipo de suelo o la cobertura vegetal y en el eje Y la diversidad o abundincia. Se presume que debido a una menor canditad en las variables independientes abrá menor abundancia y diversidad.
 
-En esta parte debe aplicar las regresiones lineal, linearizada y generalizada sobre la presencia de ácaros en musgos. Una de las especies analizadas es *Galumma sp.* cuya abundancia presencia y proporción es posiblemente afectada por las siguiente cinco variables ambientales como densidad de sustrato, el tipo de sustrato, el contenido de agua, si se tiene o no arbustos en la cercanía y la topografía del suelo. Utilice la data `mites.csv` y responda los siguientes items.
+#Pregunta 3 
 
 -   ¿Cuál es el efecto de las variables ambientales en la i) abundancia de ii) abundancia y iii) proporción de la especie *Galumma sp.*?
 
-Para responder esta pregunta debe generar las hipótesis y probar las hipótesis (código y explicación), asimismo visualizar con etiquetas adecuadas. Considere realizar lo siguiente:
-
 -   Realizar un análisis exploratorio.
+
+```{r acaros}
+str(mites)
+attach(mites)
+```
+
+```{r acaros}
+summary(mites)
+```
+
+```{r plot1}
+library(ggplot2)
+ggplot(data = mites, aes(x = AbundanceGalumma, y = WaterContent, 
+                          col = Ocurrence)) +
+  geom_point()
+
+library(ggplot2)
+ggplot(data = mites, aes(x = AbundanceGalumma, y = SubstrateDensity, 
+                          col = Ocurrence)) +
+  geom_point()
+
+```
+
+En la figura se muestra que a medida que $$Abundance Galuma$$la contención de agua en los sustratos disminuye en los musgos. Esto se puede visualizar gracias la ocurrencia  de Galuma en los musgos. 
 
 -   Realizar regresiones lineales de cada variable de respuesta y variables efectoras, univariable o multivariable. Verifique los supuestos de la regresión.
 
+$H_{01}$: El incremneto de la abundancia de galuma no produce un efecto en la contención de agua en los musgos y en la densidad de los substratos 
+$H_{02}$: El incremento de la abundancia de galuma produce un efecto en la contención de agua en los musgos y en la densidad de los substratos. 
+
+
+Como se pudo ver en los gráfios la contención de agua y de la densidad de los substratos en los musgos se ve afectado por la abundancia de los acaros, Por lo que para la regresión linea se plantea lo siguiente: 
+
+$$
+wc = \beta_0 + \beta_1 \cdot  Abundance Galuma + \epsilon_0
+$$
+```{r rem_acaros}
+lm1 = lm(AbundanceGalumma ~WaterContent, data = mites)
+summary(lm1)
+
+ggplot(mites, aes(x=AbundanceGalumma, y = WaterContent)) + 
+  geom_point() +
+  geom_smooth(method="lm") + theme_classic()
+```
+
+$\beta_0 = -0.36132$ Cuando no hay abundancia en galuma el wc es de 0.23 horas. Esto no se cumple en la realidad; además el p-valor no es significativo.
+
+$\beta_1=0.21531$ Por cada incrementa la ocurrencia de galuma, la contención de agua en wc incrementa en 0.23 horas. 
+
+El modelo final es : 
+
+$$
+rem = 0.2359 \cdot  Abundance Galuma + \epsilon
+$$
+#Verificación de los Supuestos 
+## i. Media de errores es nula
+
+```{r c1errorcero}
+cond1 = sum(lm1$residuals)
+cond1
+```
+## ii. Linearidad
+
+```{r c2linear}
+plot(lm1, 1)
+```
+
+La figura muestra que los valores tienen una distribuciín aleatoria, y la recta es muy cerca al cero, sin embargo, muchos existen valores atiícos que afectan al modelo y al análisis. Por lo que se presumem que la condición de linearidad no se cumple por completo. 
+
+## iii. Normalidad de los residuales
+
+```{r c3normal}
+hist(lm1$residuals)
+
+```
+
+La figura muestra que se tiene uns sesgo hacia la izquierda de los residuales. Aparentemente no se cumple la condición. Se va realizar la representación qqplot. 
+
+```{r c3normal2}
+plot(lm1, 2)
+```
+
+Aunque el histograma dice que aparenetemente no es normal, el q-q plot indica que solamente algunos puntos afectan a esa normalidad (1, 34, 14). Se debe verificar la validez de la normalidad utlizando el test de Shapiro. Para este test se debe plantear una hipótesis nula. 
+
+$H_0: $ la distribución es normal ($CI:95%, p>0.05$)
+
+```{r c3normal3}
+shapiro.test(lm1$residuals)
+
+```
+
+Con un 95% de confianza el valor $p=0.01$ indica que no se cumple la condición de normalidad. Por lo tanto se debe extraer los valores atípicos. 
+## iv. Independencia de medidas
+
+```{r c4independencia}
+plot(lm1, 4)
+abline(h=4/(length(lm1$residuals)-2-1), col="green")
+
+```
+
+La gráfica nos indica que con certeza las medidas 1, 14 y 67 son valores atípicos.
+
+
+```{r c3cooksdist}
+k = 2  # numero de variables
+N = length(lm1$residuals)  #número de observaciones
+umbral_cookd = 4/(N-k-1)
+umbral_cookd
+sort(cooks.distance(lm1), decreasing = TRUE)
+
+```
+
+En base a la gráfica de distancias de Cook a la anterior fihura y la verificación con la tabla de distancias de Cook se verifica que las medidas 1, 14, 34 y 67 son altamente influyentes y posiblemente valores atípicos; por lo tanto se debe quitar esas medidas y realizar nuevamente la regresión.
+
+## v. Homogeneidad de varianzas (Homocedasticidad)
+```{r c5varkte}
+plot(lm1, 3)
+
+```
+
+Las medidas 1, 14 y 34 tienen alta influencia por lo que se tiene una tendencia en la curva de la raíz de los residuales estandarizados versus valores ajustados. No se cumple la condición de homogeneidad de varianzas. 
+
+
 -   Realizar regresiones linearizadas de cada variable de respuesta y variables efectoras, univariable o multivariable.
+
+## Linearización
+
+```{r logacaros}
+ggplot(mites, aes(x=AbundanceGalumma, y = WaterContent)) + 
+  geom_point() +
+  geom_smooth(method="lm") + theme_classic()
+
+
+```
+
+Luego de que se observa que algunos puntos están muy alejados de la recta y que la recta no se ajusta a la mayoría de puntos por lo cuál tiene un comportamiento "extraño". 
+
+Para corregir se recurre a las transformaciones, también denominadas "linearización"
+
+```{r transform}
+library(tidyr); library(dplyr)
+df3 = mites %>% 
+  mutate(AbundanceGalummasqrt = sqrt(AbundanceGalumma), 
+         AbundanceGalummalog = log(AbundanceGalumma), 
+         AbundanceGalummafrac = 1/(AbundanceGalumma), 
+         AbundanceGalumma = sin(AbundanceGalumma))
+
+```
+
+Visualizamos la data transformada. 
+```{r plottransform}
+ggplot(df3, aes(x=AbundanceGalummalog, y = WaterContent)) + 
+  geom_point() +
+  geom_smooth(method="lm") + theme_classic()
+
+```
+
+De todas las transformaciones la que mejor adecua los datos para una regresión el ```log``` que es la función logaritmo natural. Por lo tanto la recta ajustable es: 
+
+$$
+y =\beta_0 + \beta_1 log(x) + \epsilon
+$$
+
+
 
 -   Realizar regresiones lineales generalizadas de cada variable de respuesta y variables efectoras, univariable o multivariable.
 
