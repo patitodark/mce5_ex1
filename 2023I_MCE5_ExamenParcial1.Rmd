@@ -14,88 +14,65 @@ output:
     self_contained: true
 ---
 
-<center>![](https://www.ikiam.edu.ec/wp-content/uploads/2021/12/logo-ikiam-1.png)</center>
+#Pregunta 2
 
+##Diseño de Matriz (Muestra)
 
-Bienvenidos al examen parcial de Métodos Cuantitativos en Ecología [MCE5 - 2023I]. Para esta evaluación utilice este cuaderno de R Markdown y tenga en cuenta las siguientes instruciones:
-
-* **FUNDAMENTAL: La entrega es el enlace de GitHub.** A partir de una bifurcación de la carpeta del examen de GitHub, cree una carpeta en su computador donde guarden este cuaderno .Rmd y la data que van a utilizar. Definan a esa carpeta como su directorio de trabajo. 
-
-* Arriba, donde dice "author", deben cambiar por sus datos.
-
-* Los codigos deben ser escritos dentro de las cajas ```{r} ``` o dentro de las cajas indicadas abajo de las preguntas.
-
-* Genere un documento html de este cuaderno .Rmd. 
-
-* Guarde todos los documentos y figuras en una carpeta "mce5_exame1", copie y pegue el enlace en el aula virtual, donde dice "ExamenParcial1".
-
-* **FUNDAMENTAL: No imprima tablas completas, si quiere mostrar algo use la función ```head()```.**
-
-* **FUNDAMENTAL: Todo bloque de código (30%) debe ir acompañado de una explicación del resultado (70%). Si no tiene la explicación no será considerado para calificar.**  
-
-* **FUNDAMENTAL: La honestidad académica es fundamental en su formación, escriba ideas propias, evite el plagio y la copia que incluye el uso indebido de herramientas de inteligencia artificial.**
-
-
-# **[2 PUNTOS] Control de cambios.**
-
-* Realice la bifurcación de la carpeta del Examen
-
-* Cree una carpeta en su conputador con "Control de Cambios" usando Git
-
-* Cada vez que responda una pregunta, envíe los cambios con un ```commit``` similar a `Apellido Nombre ha realizado el ejercicio ##`. 
-
-# **[2 PUNTOS] Diseño, especies raras.**
-
-En el estudio realizado por <a href="https://doi.org/10.1111/jvs.13185">Sanches -Martin R., Verdú M. y Montensinos-Navarro A. (2023)</a> evaluan cómo la facilitación interespecífica puede mantener la diversidad a lo largo de la vida de la especie al evitar la extinción de especies localmente raras en etapas juveniles y reducir las disparidades de rendimiento entre vecinos de diferentes especies en etapas maduras.. Suponga que quiere replicar este estudio en alguna zona del Ecuador. Para ello inicie respondiendo las siguientes preguntas:  
-
-## Para su potencial investigación ¿Cuál sería su hipótesis ? (Explique)
-
-**Respuesta:**
-
-
-## Muestra
-
-Replique el diseño realizado en el artículo en localidades del Ecuador y genere el archivo **rarespecies.csv**. 
-
-```{r crd_anfibios}
-sitios = c("Sitio1", "Chuquitos", "Chompi")
+```{r crd_re, echo=TRUE, paged.print=TRUE}
+library(agricolae)
+sitios <-c("Parque Itchimbia", "Parque Guanguiltagua", "Parque La Corolina")
+r <- 3
+seed = 100
+crd1 <-design.crd(trt= sitios,
+                  r = r,
+                  serie=2, 
+                  seed = seed,
+                  kind = "Super-Duper", 
+                  randomization = TRUE)
+crd_re <- crd1$book
+crd_re$etapas<- NaN
+crd_re$coverturavegetal<- NaN
+crd_re$diversidad<-NaN
+crd_re$Abundacia<-NaN
+crd_re$tiposdesielos<-NaN
+# write to hard disk
+write.csv(crd_re,"rarespecies.csv", row.names=FALSE, sep=";")
+# file.show("crd.txt")
 
 ```
-Explique el resultado muestra: 
 
-**Respuesta:**
-
-
+El diseño de la muestra que se ejucutó tenuendo en cuenta 3 pafques con alta cobertura vegetal de la ciudad de Quito, por lo cual se podría encontrar alta diversidad de especies y de esta manera encontrar especies raras. Además, se tuvo en cuenta la abundancia de las mismas y las etapas.
 
 ## Variables
-¿Cuáles son sus variables (dependiente(s) e independiente(s))? Explique cada una de las variables
 
-**Respuesta:**
-
+Las variables independientes es cobertura vegetal, diverisidad de especies y el tipo de suelo a que son las que nos ayudan a determinar la etapa de ciclo de vida de las especies y la abundancia de las mismas en estos lugares. Por lo que, etapa, abundancia y diversidad son variables dependientes.
 
 ## Gráfica e hipótesis
-En una hoja de papel dibuje un gráfico hipotetico basado en la figura 4 del artículo mostrando [Coloque adecuadamente las leyendas]. Describa su figura justifique su razonamiento.
 
-**Respuesta (adjunte una foto de la imagen o genere una gráfica con código)**
-<center>![](hola.png)</center>
+###Hipotesis
 
+La cobertura vegetal de un sitio y el tipo del suelo ayudan a la crecimiento de plantas, incluyendo las especies raras (diversidad), por lo que dependiendo de estos facoteres se puede determinar la abundancia de las mismas
 
+H_0: Si el sitio de muestro tiene una mejor cobertura vegetal existirá una mayor abuandancia en la diversidad de las especies. ####H_1: Si el sitio de muestro tiene una poca cobertura vegetal no existirá abuandancia de las especies.
 
+Gráfica:
 
-# **[6 PUNTOS] Regresiones
+![](images/Imagen%20de%20WhatsApp%202023-05-23%20a%20las%2008.56.32-01.jpg){width="450"}
 
-En esta parte debe aplicar las regresiones lineal, linearizada y generalizada sobre la presencia de ácaros en musgos. Una de las especies analizadas es *Galumma sp.* cuya abundancia presencia y proporción es posiblemente afectada por las siguiente cinco variables ambientales como densidad de sustrato, el tipo de sustrato, el contenido de agua, si se tiene o no arbustos en la cercanía y la topografía del suelo. Utilice la data ```mites.csv``` y responda los siguientes items. 
+Con esta imagen se pretende que en el eje de la X, se encuentre el tipo de suelo o la cobertura vegetal y en el eje Y la diversidad o abundincia. Se presume que debido a una menor canditad en las variables independientes abrá menor abundancia y diversidad.
 
-- ¿Cuál es el efecto de las variables ambientales en la i) abundancia de ii) abundancia y iii) proporción de la especie *Galumma sp.*?
+En esta parte debe aplicar las regresiones lineal, linearizada y generalizada sobre la presencia de ácaros en musgos. Una de las especies analizadas es *Galumma sp.* cuya abundancia presencia y proporción es posiblemente afectada por las siguiente cinco variables ambientales como densidad de sustrato, el tipo de sustrato, el contenido de agua, si se tiene o no arbustos en la cercanía y la topografía del suelo. Utilice la data `mites.csv` y responda los siguientes items.
+
+-   ¿Cuál es el efecto de las variables ambientales en la i) abundancia de ii) abundancia y iii) proporción de la especie *Galumma sp.*?
 
 Para responder esta pregunta debe generar las hipótesis y probar las hipótesis (código y explicación), asimismo visualizar con etiquetas adecuadas. Considere realizar lo siguiente:
 
-- Realizar un análisis exploratorio.
+-   Realizar un análisis exploratorio.
 
-- Realizar regresiones lineales de cada variable de respuesta y variables efectoras, univariable o multivariable. Verifique los supuestos de la regresión. 
+-   Realizar regresiones lineales de cada variable de respuesta y variables efectoras, univariable o multivariable. Verifique los supuestos de la regresión.
 
-- Realizar regresiones linearizadas de cada variable de respuesta y variables efectoras, univariable o multivariable. 
+-   Realizar regresiones linearizadas de cada variable de respuesta y variables efectoras, univariable o multivariable.
 
-- Realizar regresiones lineales generalizadas de cada variable de respuesta y variables efectoras, univariable o multivariable. 
+-   Realizar regresiones lineales generalizadas de cada variable de respuesta y variables efectoras, univariable o multivariable.
 
-- Comparar de la bondad de las regresiones. 
+-   Comparar de la bondad de las regresiones.
